@@ -118,7 +118,7 @@ export default async function handler(req, res) {
     });
 
     const result = await openai.images.generate({
-      model: "gpt-image-1",
+      model: "dall-e-3",
       prompt,
       size: "1024x1536",
     });
