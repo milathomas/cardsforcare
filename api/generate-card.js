@@ -1,7 +1,13 @@
-```js
 import OpenAI from "openai";
 
-// --- Allowed options (safety: dropdown-only) ---
+/**
+ * Force Node.js runtime (important for OpenAI SDK).
+ * This prevents accidental Edge execution which can crash.
+ */
+export const config = {
+  runtime: "nodejs",
+};
+
 const ALLOWED = {
   cardType: [
     "Welcome Home",
@@ -50,27 +56,32 @@ function buildPrompt({ cardType, whoFor, theme, vibe }) {
 }
 
 export default async function handler(req, res) {
-  // --- CORS: allow your IONOS site to call this Vercel API ---
-  const origin = req.headers.origin;
-  const allowedOrigins = [
+  // ----- CORS (allow your IONOS site) -----
+  // In Node serverless, origin is usually on req.headers.origin (string).
+  // This fallback keeps it safe even if something changes.
+  const origin =
+    req?.headers?.origin ||
+    (typeof req?.headers?.get === "function" ? req.headers.get("origin") : "");
+
+  const allowedOrigins = new Set([
     "https://airplanegirl.com",
     "https://www.airplanegirl.com",
-  ];
+  ]);
 
-  if (allowedOrigins.includes(origin)) {
+  if (allowedOrigins.has(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Preflight request (required for cross-site POST + JSON)
+  // Preflight (browser sends this before POST)
   if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
 
   try {
-    // Friendly GET response for quick browser check
+    // GET = health check (should never crash)
     if (req.method === "GET") {
       return res.status(200).json({
         ok: true,
@@ -102,7 +113,9 @@ export default async function handler(req, res) {
 
     const prompt = buildPrompt({ cardType, whoFor, theme, vibe });
 
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY.trim() });
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY.trim(),
+    });
 
     const result = await openai.images.generate({
       model: "gpt-image-1",
@@ -126,4 +139,3 @@ export default async function handler(req, res) {
     });
   }
 }
-```
