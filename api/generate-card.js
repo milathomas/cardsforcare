@@ -120,7 +120,7 @@ export default async function handler(req, res) {
     const result = await openai.images.generate({
       model: "dall-e-3",
       prompt,
-      size: "1024x1536",
+      size: "1024x1024",
     });
 
     const b64 = result?.data?.[0]?.b64_json;
