@@ -4,6 +4,7 @@ export const config = {
   runtime: "nodejs",
 };
 
+// Safety: only allow dropdown values
 const ALLOWED = {
   cardType: [
     "Welcome Home",
@@ -52,8 +53,7 @@ function buildPrompt({ cardType, whoFor, theme, vibe }) {
   ].join("\n");
 }
 
-export default async function handler(req, res) {
-  // ---- CORS ----
+function setCors(req, res) {
   const origin =
     req?.headers?.origin ||
     (typeof req?.headers?.get === "function" ? req.headers.get("origin") : "");
@@ -69,12 +69,29 @@ export default async function handler(req, res) {
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
 
+// Download OpenAI-hosted image URL and convert to base64 data URL
+async function fetchImageAsDataUrl(imageUrl) {
+  const r = await fetch(imageUrl);
+  if (!r.ok) throw new Error(`Failed to download image (${r.status})`);
+
+  const contentType = r.headers.get("content-type") || "image/png";
+  const arrayBuffer = await r.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString("base64");
+  return `data:${contentType};base64,${base64}`;
+}
+
+export default async function handler(req, res) {
+  setCors(req, res);
+
+  // Preflight
   if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
 
   try {
+    // Health check
     if (req.method === "GET") {
       return res.status(200).json({
         ok: true,
@@ -104,31 +121,31 @@ export default async function handler(req, res) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY.trim() });
     const prompt = buildPrompt({ cardType, whoFor, theme, vibe });
 
-    // ---- DALL·E 3 ----
+    // DALL·E 3 (typically returns a URL)
     const result = await openai.images.generate({
       model: "dall-e-3",
       prompt,
       size: "1024x1024",
-      // quality: "standard", // optional
     });
 
     const item = result?.data?.[0];
 
-    // DALL·E typically returns URL
-    if (item?.url) {
-      return res.status(200).json({ imageUrl: item.url });
-    }
-
-    // If it ever returns base64, support that too
+    // If OpenAI gives base64 directly, use it
     if (item?.b64_json) {
       return res.status(200).json({
         imageDataUrl: `data:image/png;base64,${item.b64_json}`,
       });
     }
 
+    // If OpenAI gives a URL, download it and convert to base64
+    if (item?.url) {
+      const imageDataUrl = await fetchImageAsDataUrl(item.url);
+      return res.status(200).json({ imageDataUrl });
+    }
+
     return res.status(500).json({
       error: "OpenAI returned no image data.",
-      details: JSON.stringify(result)?.slice(0, 500),
+      details: JSON.stringify(result)?.slice(0, 800),
     });
   } catch (err) {
     console.error("generate-card error:", err);
