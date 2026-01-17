@@ -1,9 +1,5 @@
 import OpenAI from "openai";
 
-/**
- * Force Node.js runtime (important for OpenAI SDK).
- * This prevents accidental Edge execution which can crash.
- */
 export const config = {
   runtime: "nodejs",
 };
@@ -41,24 +37,23 @@ function isAllowed(val, list) {
 
 function buildPrompt({ cardType, whoFor, theme, vibe }) {
   return [
-    "Create a greeting card FRONT design (portrait).",
-    `Headline text (must be readable): "${cardType.toUpperCase()}".`,
+    "Design a greeting card FRONT (portrait).",
+    `Headline text (readable): "${cardType.toUpperCase()}".`,
     `Recipient: ${whoFor}.`,
     `Theme: ${theme}.`,
     `Vibe: ${vibe}.`,
     "",
-    "Design rules:",
-    "- Print-friendly with safe margins (no text near edges).",
+    "Constraints:",
+    "- Print-friendly with safe margins.",
     "- Kind, uplifting, respectful, appropriate for all ages.",
-    "- No logos, no brands, no watermarks.",
+    "- No logos, brands, or watermarks.",
     "- No real people or photoreal faces.",
+    "- Clean illustration style.",
   ].join("\n");
 }
 
 export default async function handler(req, res) {
-  // ----- CORS (allow your IONOS site) -----
-  // In Node serverless, origin is usually on req.headers.origin (string).
-  // This fallback keeps it safe even if something changes.
+  // ---- CORS ----
   const origin =
     req?.headers?.origin ||
     (typeof req?.headers?.get === "function" ? req.headers.get("origin") : "");
@@ -75,18 +70,15 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Preflight (browser sends this before POST)
   if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
 
   try {
-    // GET = health check (should never crash)
     if (req.method === "GET") {
       return res.status(200).json({
         ok: true,
-        message:
-          "Cards for Care API is running. Send a POST to generate an image.",
+        message: "Cards for Care API is running. Send a POST to generate an image.",
       });
     }
 
@@ -95,9 +87,7 @@ export default async function handler(req, res) {
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
-        error: "Missing OPENAI_API_KEY env var in Vercel.",
-      });
+      return res.status(500).json({ error: "Missing OPENAI_API_KEY env var in Vercel." });
     }
 
     const { cardType, whoFor, theme, vibe } = req.body || {};
@@ -111,25 +101,34 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Invalid input" });
     }
 
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY.trim() });
     const prompt = buildPrompt({ cardType, whoFor, theme, vibe });
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY.trim(),
-    });
-
+    // ---- DALL·E 3 ----
     const result = await openai.images.generate({
       model: "dall-e-3",
       prompt,
       size: "1024x1024",
+      // quality: "standard", // optional
     });
 
-    const b64 = result?.data?.[0]?.b64_json;
-    if (!b64) {
-      return res.status(500).json({ error: "OpenAI returned no image data." });
+    const item = result?.data?.[0];
+
+    // DALL·E typically returns URL
+    if (item?.url) {
+      return res.status(200).json({ imageUrl: item.url });
     }
 
-    return res.status(200).json({
-      imageDataUrl: `data:image/png;base64,${b64}`,
+    // If it ever returns base64, support that too
+    if (item?.b64_json) {
+      return res.status(200).json({
+        imageDataUrl: `data:image/png;base64,${item.b64_json}`,
+      });
+    }
+
+    return res.status(500).json({
+      error: "OpenAI returned no image data.",
+      details: JSON.stringify(result)?.slice(0, 500),
     });
   } catch (err) {
     console.error("generate-card error:", err);
