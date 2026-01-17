@@ -1,7 +1,7 @@
+```js
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
+// --- Allowed options (safety: dropdown-only) ---
 const ALLOWED = {
   cardType: [
     "Welcome Home",
@@ -50,12 +50,32 @@ function buildPrompt({ cardType, whoFor, theme, vibe }) {
 }
 
 export default async function handler(req, res) {
+  // --- CORS: allow your IONOS site to call this Vercel API ---
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "https://airplanegirl.com",
+    "https://www.airplanegirl.com",
+  ];
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  // Preflight request (required for cross-site POST + JSON)
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   try {
-    // Always respond to browser GETs (so visiting the URL doesn't "crash")
+    // Friendly GET response for quick browser check
     if (req.method === "GET") {
       return res.status(200).json({
         ok: true,
-        message: "Cards for Care API is running. Send a POST to generate an image.",
+        message:
+          "Cards for Care API is running. Send a POST to generate an image.",
       });
     }
 
@@ -82,6 +102,8 @@ export default async function handler(req, res) {
 
     const prompt = buildPrompt({ cardType, whoFor, theme, vibe });
 
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY.trim() });
+
     const result = await openai.images.generate({
       model: "gpt-image-1",
       prompt,
@@ -104,3 +126,4 @@ export default async function handler(req, res) {
     });
   }
 }
+```
