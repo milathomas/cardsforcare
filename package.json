@@ -1,0 +1,10 @@
+{
+  "name": "cardsforcare-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Serverless API for Cards for Care image generation",
+  "dependencies": {
+    "openai": "^4.0.0"
+  }
+}
