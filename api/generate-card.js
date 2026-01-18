@@ -37,31 +37,25 @@ function isAllowed(val, list) {
 }
 
 function buildPrompt({ cardType, whoFor, theme, vibe }) {
+  const HEADLINE = String(cardType).toUpperCase();
+
   return [
-    "Design a SINGLE-PANEL greeting card FRONT only (portrait orientation).",
-    "This is a poster-style card with ONE SIDE ONLY.",
-    "",
-    `Main headline text (large, bold, readable): "${cardType}"`,
-    "The headline must be the ONLY text on the card.",
-    "",
-    `Recipient context (do not add as text): ${whoFor}.`,
-    `Theme inspiration: ${theme}.`,
-    `Overall vibe: ${vibe}.`,
-    "",
-    "STRICT CONSTRAINTS:",
-    "- ONE SIDE ONLY. No back, no inside, no secondary panel.",
-    "- NO small text. NO paragraphs. NO fine print.",
-    "- NO filler text, lorem ipsum, quotes, or decorative micro-copy.",
-    "- The headline should dominate the design (playful or elegant typography).",
-    "- Illustration should support the headline, not compete with it.",
-    "- Print-friendly with generous margins.",
-    "- Flat, clean illustration style.",
-    "- No logos, brands, watermarks, or signatures.",
-    "- No real people or photorealistic faces.",
-    "",
-    "Think simple, joyful, bold — similar to a modern birthday poster."
+    `Single greeting card FRONT only. One flat panel. Portrait poster design.`,
+    `No back/inside. No mockup. No folded card. No second sheet behind.`,
+    ``,
+    `TEXT RULE (must follow exactly):`,
+    `- The ONLY visible words are: "${HEADLINE}"`,
+    `- No other letters, words, paragraphs, captions, or tiny text anywhere.`,
+    `- Do NOT print any instructions or rules as text.`,
+    ``,
+    `Design: big bold headline, centered, high contrast, easy to read.`,
+    `Theme: ${theme}. Vibe: ${vibe}.`,
+    `Recipient context (not printed): ${whoFor}.`,
+    `Artwork: simple, clean illustration that supports the headline; large shapes; minimal details.`,
+    `Print friendly with generous margins. No logos/watermarks/signatures.`
   ].join("\n");
 }
+
 
 function setCors(req, res) {
   const origin =
