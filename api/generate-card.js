@@ -40,21 +40,20 @@ function buildPrompt({ cardType, whoFor, theme, vibe }) {
   const HEADLINE = String(cardType).toUpperCase();
 
   return [
-    `Single greeting card FRONT only. One flat panel. Portrait poster design.`,
-    `No back/inside. No mockup. No folded card. No second sheet behind.`,
+    `Design ONE SINGLE image: a flat 2D greeting card FRONT only.`,
+    `The image must look like a straight-on scan/poster, NOT a product photo.`,
+    `NO mockup, NO two-page layout, NO multiple cards, NO folded card, NO inside/back, NO second panel, NO overlapping pages.`,
+    `NO shadows, NO table, NO background scene. Just the card front filling the frame.`,
     ``,
-    `TEXT RULE (must follow exactly):`,
-    `- The ONLY visible words are: "${HEADLINE}"`,
-    `- No other letters, words, paragraphs, captions, or tiny text anywhere.`,
-    `- Do NOT print any instructions or rules as text.`,
+    `TEXT RULE: The ONLY visible text is exactly: "${HEADLINE}"`,
+    `No other text anywhere (no small text, no captions, no lorem ipsum, no decorative writing).`,
     ``,
-    `Design: big bold headline, centered, high contrast, easy to read.`,
     `Theme: ${theme}. Vibe: ${vibe}.`,
     `Recipient context (not printed): ${whoFor}.`,
-    `Artwork: simple, clean illustration that supports the headline; large shapes; minimal details.`,
-    `Print friendly with generous margins. No logos/watermarks/signatures.`
+    `Style: clean bold poster design, big shapes, high contrast, print-friendly margins.`
   ].join("\n");
 }
+
 
 
 function setCors(req, res) {
@@ -129,7 +128,7 @@ export default async function handler(req, res) {
     const result = await openai.images.generate({
       model: "dall-e-3",
       prompt,
-      size: "1024x1024",
+      size: "1024x1792",
     });
 
     const item = result?.data?.[0];
