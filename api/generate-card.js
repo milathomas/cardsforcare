@@ -38,23 +38,28 @@ function isAllowed(val, list) {
 
 function buildPrompt({ cardType, whoFor, theme, vibe }) {
   return [
-    "Design a greeting card FRONT (portrait).",
-    `Headline text (readable): "${cardType.toUpperCase()}".`,
-    `Recipient: ${whoFor}.`,
-    `Theme: ${theme}.`,
-    `Vibe: ${vibe}.`,
+    "Design a SINGLE-PANEL greeting card FRONT only (portrait orientation).",
+    "This is a poster-style card with ONE SIDE ONLY.",
     "",
-    "Constraints:",
-    "- Print-friendly with safe margins. only show front side of card -- just one page. aligned properly vertically.",
-    "- Kind, uplifting, respectful, appropriate for all ages.",
-    "- No logos, brands, or watermarks.",
-    "- No real people or photoreal faces.",
-    "- Clean illustration style.",
-    "- Just the card itself, no background.",
-    "- Just have the front of the card, no back or inside.",
-    "- No additional words, just the main message (e.g. Welcome Home).",
-    "- Size should be half of A4 paper (vertical positioning),",
-    
+    `Main headline text (large, bold, readable): "${cardType}"`,
+    "The headline must be the ONLY text on the card.",
+    "",
+    `Recipient context (do not add as text): ${whoFor}.`,
+    `Theme inspiration: ${theme}.`,
+    `Overall vibe: ${vibe}.`,
+    "",
+    "STRICT CONSTRAINTS:",
+    "- ONE SIDE ONLY. No back, no inside, no secondary panel.",
+    "- NO small text. NO paragraphs. NO fine print.",
+    "- NO filler text, lorem ipsum, quotes, or decorative micro-copy.",
+    "- The headline should dominate the design (playful or elegant typography).",
+    "- Illustration should support the headline, not compete with it.",
+    "- Print-friendly with generous margins.",
+    "- Flat, clean illustration style.",
+    "- No logos, brands, watermarks, or signatures.",
+    "- No real people or photorealistic faces.",
+    "",
+    "Think simple, joyful, bold — similar to a modern birthday poster."
   ].join("\n");
 }
 
@@ -100,7 +105,7 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       return res.status(200).json({
         ok: true,
-        message: "Cards for Care API is running (Mila was here). Send a POST to generate an image.",
+        message: "Cards for Care API is running. Send a POST to generate an image.",
       });
     }
 
