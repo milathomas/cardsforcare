@@ -50,6 +50,11 @@ function buildPrompt({ cardType, whoFor, theme, vibe }) {
     "- No logos, brands, or watermarks.",
     "- No real people or photoreal faces.",
     "- Clean illustration style.",
+    "- Just the card itself, no background.",
+    "- Just have the front of the card, no back or inside.",
+    "- No additional words, just the main message (e.g. Welcome Home).",
+    "- Size should be half of A4 paper (vertical positioning),",
+    
   ].join("\n");
 }
 
