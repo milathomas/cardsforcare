@@ -35,26 +35,27 @@ const ALLOWED = {
 function isAllowed(val, list) {
   return typeof val === "string" && list.includes(val);
 }
-
-function buildPrompt({ cardType, whoFor, theme, vibe }) {
-  const HEADLINE = String(cardType).toUpperCase();
+function buildPrompt({ cardType, theme, vibe }) {
+  const TEXT = String(cardType).toUpperCase();
 
   return [
-    `Design ONE SINGLE image: a flat 2D greeting card FRONT only.`,
-    `The image must look like a straight-on scan/poster, NOT a product photo.`,
-    `NO mockup, NO two-page layout, NO multiple cards, NO folded card, NO inside/back, NO second panel, NO overlapping pages.`,
-    `NO shadows, NO table, NO background scene. Just the card front filling the frame.`,
-    ``,
-    `TEXT RULE: The ONLY visible text is exactly: "${HEADLINE}"`,
-    `No other text anywhere (no small text, no captions, no lorem ipsum, no decorative writing).`,
-    ``,
-    `Theme: ${theme}. Vibe: ${vibe}.`,
-    `Recipient context (not printed): ${whoFor}.`,
-    `Style: clean bold poster design, big shapes, high contrast, print-friendly margins.`
+    "Create a single flat greeting card FRONT only.",
+    "Square format. One panel. Straight-on poster design.",
+    "No mockups. No folded cards. No desk or objects. No multiple pages.",
+    "",
+    `TEXT LOCK (critical):`,
+    `The ONLY visible text must be exactly: "${TEXT}"`,
+    "Do not add any other words, letters, symbols, numbers, or decorative text.",
+    "Do not add tiny text. Do not add fake writing. Do not add captions.",
+    "",
+    `Theme style: ${theme}.`,
+    `Emotional vibe: ${vibe}.`,
+    "",
+    "Design style: clean, modern illustration with bold shapes.",
+    "High contrast, readable typography, centered or visually balanced.",
+    "Print-friendly margins. No logos, watermarks, or signatures."
   ].join("\n");
 }
-
-
 
 function setCors(req, res) {
   const origin =
@@ -128,7 +129,7 @@ export default async function handler(req, res) {
     const result = await openai.images.generate({
       model: "dall-e-3",
       prompt,
-      size: "1024x1792",
+      size: "1024x1024",
     });
 
     const item = result?.data?.[0];
