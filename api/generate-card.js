@@ -100,7 +100,7 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       return res.status(200).json({
         ok: true,
-        message: "Cards for Care API is running. Send a POST to generate an image.",
+        message: "Cards for Care API is running (Mila was here). Send a POST to generate an image.",
       });
     }
 
