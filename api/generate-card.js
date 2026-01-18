@@ -45,7 +45,7 @@ function buildPrompt({ cardType, whoFor, theme, vibe }) {
     `Vibe: ${vibe}.`,
     "",
     "Constraints:",
-    "- Print-friendly with safe margins.",
+    "- Print-friendly with safe margins. only show front side of card -- just one page. aligned properly vertically.",
     "- Kind, uplifting, respectful, appropriate for all ages.",
     "- No logos, brands, or watermarks.",
     "- No real people or photoreal faces.",
